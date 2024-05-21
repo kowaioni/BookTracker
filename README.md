@@ -1,1 +1,1 @@
-# BookTracker
+This Rust project repository is dedicated to defining and managing data models for books. It specifically includes Rust struct types for encapsulating book-related data, focusing on essential attributes such as the book's title, author, and current status. The defined models are tailored for applications that require organized access to book information, enabling efficient storage, retrieval, and manipulation of bibliographic data.
