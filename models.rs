@@ -1,13 +1,14 @@
 use std::env;
+use std::collections::HashMap;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Status {
     Available,
     CheckedOut,
     Reserved,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Book {
     title: String,
     author: String,
@@ -38,6 +39,26 @@ fn get_book_status(status: &str) -> Result<Status, Error> {
     }
 }
 
+struct BookCache {
+    cache: HashMap<String, Book>,
+}
+
+impl BookCache {
+    fn new() -> Self {
+        BookCache {
+            cache: HashMap::new(),
+        }
+    }
+
+    fn get_or_add_book(&mut self, title: &str, author: &str, status: Status) -> &Book {
+        self.cache.entry(title.to_string()).or_insert_with(|| Book {
+            title: title.to_string(),
+            author: author.to_string(),
+            status: status.clone(),
+        })
+    }
+}
+
 fn main() -> Result<(), Error> {
     let book_title = env::var("BOOK_TITLE").map_err(Error::from)?;
     let book_author = env::var("BOOK_AUTHOR").map_err(Error::from)?;
@@ -45,12 +66,10 @@ fn main() -> Result<(), Error> {
 
     let book_status = get_book_status(&book_status_env)?;
 
-    let my_book = Book {
-        title: book_title,
-        author: book_author,
-        status: book_status,
-    };
+    let mut cache = BookCache::new();
+    let my_book = cache.get_or_add_book(&book_title, &book_author, book_status).clone();
 
     println!("{:?}", my_book);
+
     Ok(())
 }
