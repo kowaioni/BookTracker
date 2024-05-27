@@ -33,6 +33,13 @@ fn retrieve(id: String) -> Option<Json<Book>> {
     books.get(&id).cloned().map(Json)
 }
 
+#[get("/books")]
+fn list() -> Json<Vec<Book>> {
+    let books = BOOKS.lock().unwrap();
+    let books_list: Vec<Book> = books.values().cloned().collect();
+    Json(books_list)
+}
+
 #[put("/books/<id>", format = "json", data = "<book>")]
 fn update(id: String, book: Json<Book>) -> Option<Json<Book>> {
     let mut books = BOOKS.lock().unwrap();
@@ -57,5 +64,5 @@ fn delete(id: String) -> Option<Json<bool>> {
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-        .mount("/", routes![create, retrieve, update, delete])
+        .mount("/", routes![create, retrieve, update, delete, list])
 }
