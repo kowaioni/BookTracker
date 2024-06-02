@@ -1,7 +1,7 @@
-use std::sync::Mutex;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder, Result};
 use serde::{Deserialize, Serialize};
 use std::env;
+use std::sync::Mutex;
 
 #[derive(Serialize, Deserialize)]
 struct Book {
@@ -23,38 +23,28 @@ impl AppState {
     }
 }
 
-#[derive(Debug)]
-struct InternalError {
-    message: String,
-}
-
-impl InternalError {
-    fn new(message: &str) -> Self {
-        InternalError {
-            message: message.to_owned(),
-        }
-    }
-}
-
-impl From<std::sync::PoisonError<std::sync::MutexGuard<'_, Vec<Book>>>> for InternalError {
-    fn from(_: std::sync::PoisonError<std::sync::MutexGuard<'_, Vec<Book>>>) -> Self {
-        InternalError::new("Lock poisoned")
-    }
-}
-
 async fn create_book(book: web::Json<Book>, data: web::Data<AppState>) -> Result<impl Responder> {
-    let mut books = data.books.lock().map_err(|e| InternalError::from(e))?;
+    let mut books = data
+        .books
+        .lock()
+        .map_err(|_| HttpResponse::InternalServerError().body("Lock poisoned"))?;
     books.push(book.into_inner());
     Ok(HttpResponse::Created().finish())
 }
 
 async fn get_books(data: web::Data<AppState>) -> Result<impl Responder> {
-    let books = data.books.lock().map_err(|e| InternalError::from(e))?;
+    let books = data
+        .books
+        .lock()
+        .map_err(|_| HttpResponse::InternalServerError().body("Lock poisoned"))?;
     Ok(HttpResponse::Ok().json(&*books))
 }
 
 async fn update_book(book: web::Json<Book>, data: web::Data<AppState>) -> Result<impl Responder> {
-    let mut books = data.books.lock().map_err(|e| InternalError::from(e))?;
+    let mut books = data
+        .books
+        .lock()
+        .map_err(|_| HttpResponse::InternalServerError().body("Lock poisoned"))?;
     if let Some(pos) = books.iter().position(|x| x.id == book.id) {
         books[pos] = book.into_inner();
         return Ok(HttpResponse::Ok().finish());
@@ -63,7 +53,10 @@ async fn update_book(book: web::Json<Book>, data: web::Data<AppState>) -> Result
 }
 
 async fn delete_book(book_id: web::Path<u32>, data: web::Data<AppState>) -> Result<impl Responder> {
-    let mut books = data.books.lock().map_err(|e| InternalError::from(e))?;
+    let mut books = data
+        .books
+        .lock()
+        .map_err(|_| HttpResponse::InternalServerError().body("Lock poisoned"))?;
     if let Some(pos) = books.iter().position(|x| x.id == *book_id) {
         books.remove(pos);
         return Ok(HttpResponse::Ok().finish());
@@ -82,7 +75,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(app_data.clone())
             .route("/books", web::post().to(create_book))
-            .route("/9999/books", web::get().to(get_books))
+            .route("/books", web::get().to(get_books))
             .route("/books", web::put().to(update_book))
             .route("/books/{id}", web::delete().to(delete_book))
     })
