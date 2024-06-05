@@ -23,28 +23,23 @@ impl AppState {
     }
 }
 
+fn lock_poisoned_response() -> HttpResponse {
+    HttpResponse::InternalServerError().body("Lock poisoned")
+}
+
 async fn create_book(book: web::Json<Book>, data: web::Data<AppState>) -> Result<impl Responder> {
-    let mut books = data
-        .books
-        .lock()
-        .map_err(|_| HttpResponse::InternalServerError().body("Lock poisoned"))?;
+    let mut books = data.books.lock().map_err(|_| lock_poisoned_response())?;
     books.push(book.into_inner());
     Ok(HttpResponse::Created().finish())
 }
 
 async fn get_books(data: web::Data<AppState>) -> Result<impl Responder> {
-    let books = data
-        .books
-        .lock()
-        .map_err(|_| HttpResponse::InternalServerError().body("Lock poisoned"))?;
+    let books = data.books.lock().map_err(|_| lock_poisoned_response())?;
     Ok(HttpResponse::Ok().json(&*books))
 }
 
 async fn update_book(book: web::Json<Book>, data: web::Data<AppState>) -> Result<impl Responder> {
-    let mut books = data
-        .books
-        .lock()
-        .map_err(|_| HttpResponse::InternalServerError().body("Lock poisoned"))?;
+    let mut books = data.books.lock().map_err(|_| lock_poisoned_response())?;
     if let Some(pos) = books.iter().position(|x| x.id == book.id) {
         books[pos] = book.into_inner();
         return Ok(HttpResponse::Ok().finish());
@@ -53,12 +48,9 @@ async fn update_book(book: web::Json<Book>, data: web::Data<AppState>) -> Result
 }
 
 async fn delete_book(book_id: web::Path<u32>, data: web::Data<AppState>) -> Result<impl Responder> {
-    let mut books = data
-        .books
-        .lock()
-        .map_err(|_| HttpResponse::InternalServerError().body("Lock poisoned"))?;
-    if let Some(pos) = books.iter().position(|x| x.id == *book_id) {
-        books.remove(pos);
+    let mut books = data.books.lock().map_err(|_| lock_poisoned_response())?;
+    if books.iter().any(|x| x.id == *book_id) {
+        books.retain(|x| x.id != *book_id);
         return Ok(HttpResponse::Ok().finish());
     }
     Ok(HttpResponse::NotFound().finish())
