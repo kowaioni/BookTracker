@@ -7,31 +7,31 @@ struct Book {
     id: Option<i32>,
     title: String,
     author: String,
-    year: i32,
+    publication_year: i32,
 }
 
-#[post("/books", data = "<new_book>")]
-fn add_new_book(new_book: Json<Book>) -> Json<Book> {
-   new_book
+#[post("/books", data = "<book>")]
+fn add_book(book: Json<Book>) -> Json<Book> {
+   book
 }
 
-#[get("/books/<book_id>")]
-fn fetch_book_by_id(book_id: i32) -> Option<Json<Book>> {
+#[get("/books/<id>")]
+fn get_book_by_id(id: i32) -> Option<Json<Book>> {
     None
 }
 
-#[put("/books/<book_id>", data = "<updated_book>")]
-fn modify_existing_book(book_id: i32, updated_book: Json<Book>) -> Option<Json<Book>> {
-    Some(updated_book)
+#[put("/books/<id>", data = "<book_update>")]
+fn update_book(id: i32, book_update: Json<Book>) -> Option<Json<Book>> {
+    Some(book_update)
 }
 
-#[delete("/books/<book_id>")]
-fn remove_book(book_id: i32) -> Option<Json<()>> {
+#[delete("/books/<id>")]
+fn delete_book(id: i32) -> Option<Json<()>> {
     Some(Json(()))
 }
 
 #[launch]
-fn rocket() -> _ {
+fn launch_rocket() -> _ {
     rocket::build()
-        .mount("/", routes![add_new_book, fetch_book_by_id, modify_existing_book, remove_book])
+        .mount("/", routes![add_book, get_book_by_id, update_book, delete_book])
 }
