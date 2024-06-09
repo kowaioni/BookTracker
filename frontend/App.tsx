@@ -15,13 +15,11 @@ interface MainComponentState {
   books: Book[];
 }
 
-export class MainComponent extends Component<{}, MainComponentState> {
-  constructor(props: {}) {
-    super(props);
-    this.state = {
-      books: [],
-    };
-  }
+export class MainDeferredComponent extends Component<{}, MainComponentState> {
+
+  state = {
+    books: [],
+  };
 
   addBook = (book: Book): void => {
     this.setState(prevState => ({
@@ -43,12 +41,14 @@ export class MainComponent extends Component<{}, MainComponentState> {
   }
 
   render() {
+    const { books } = this.state;
+
     return (
       <div className="mainComponent">
         <NavBar />
         <div className="content">
-          <BookForm addBook={this.addManager} />
-          <BookList books={this.state.books} />
+          <BookForm addBook={this.addBook} />
+          <BookList books={books} />
         </div>
       </div>
     );
