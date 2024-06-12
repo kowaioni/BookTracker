@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { BookForm } from './BookForm';
+import { BookForm } from './BookStateForm';
 import { BookList } from './BookList';
 import { NavBar } from './NavBar';
 import './MainComponent.css';
@@ -16,7 +16,6 @@ interface MainComponentState {
 }
 
 export class MainDeferredComponent extends Component<{}, MainComponentState> {
-
   state = {
     books: [],
   };
@@ -24,6 +23,12 @@ export class MainDeferredComponent extends Component<{}, MainComponentState> {
   addBook = (book: Book): void => {
     this.setState(prevState => ({
       books: [...prevState.books, { ...book, id: Date.now() }],
+    }));
+  };
+
+  deleteBook = (id: number): void => {
+    this.setState(prevState => ({
+      books: prevState.books.filter(book => book.id !== id),
     }));
   };
 
@@ -47,8 +52,8 @@ export class MainDeferredComponent extends Component<{}, MainComponentState> {
       <div className="mainComponent">
         <NavBar />
         <div className="content">
-          <BookForm addBook={this.addBook} />
-          <BookList books={books} />
+          <BookForm addBook={this.addAuthBook} />
+          <BookList books={books} deleteBook={this.deleteBook} />
         </div>
       </div>
     );
