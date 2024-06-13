@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import axios from 'axios';
 
 interface Book {
+  isbn?: string;
   title: string;
   author: string;
   status: 'read' | 'currently reading' | 'want to read';
@@ -16,6 +17,7 @@ const addBook = (book: Book) => ({
 });
 
 const AddBookForm: React.FC = () => {
+  const [isbn, setIsbn] = useState('');
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [status, setStatus] = useState<'read' | 'currently reading' | 'want to read'>('want to read');
@@ -23,24 +25,47 @@ const AddBookForm: React.FC = () => {
 
   const dispatch = useDispatch();
 
+  const handleFetchBookDetails = async () => {
+    setError(null); // Reset error state before fetching
+    try {
+      // Example API - replace with an actual ISBN book details API endpoint if available
+      const response = await axios.get(`https://www.example.com/api/books/${isbn}`);
+      const data = response.data;
+      
+      // Assuming the response has title and author fields
+      setTitle(data.title);
+      setAuthor(data.author);
+    } catch (error) {
+        console.error("Error fetching book details", error);
+        setError("Failed to fetch book details. Please check the ISBN and try again.");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null); // Reset error state on a new submission
 
-    const newBook: Book = { title, author, status };
-    
-    dispatch(addBook(newBook));
+    const newBook: Book = { isbn, title, author, status };
     
     try {
-      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/books`, newFirstBook);
+      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/books`, newBook);
+      dispatch(addBook(newBook));
     } catch (error) {
         console.error("Error adding book to the backend", error);
-        setError("There was an error adding your book. Please try again."); // Set error state to display the message
+        setError("There was an error adding your book. Please try again.");
     }
   };
 
   return (
     <form onSubmit={handleSubmit}>
+      <label htmlFor="isbn">ISBN:</label>
+      <input
+        id="isbn"
+        value={isbn}
+        onChange={(e) => setIsbn(e.target.value)}
+      />
+      <button type="button" onClick={handleFetchBookDetails}>Fetch Details</button>
+      
       <label htmlFor="title">Title:</label>
       <input
         id="title"
@@ -70,11 +95,10 @@ const AddBookForm: React.FC = () => {
       </select>
       
       <button type="submit">Add Book</button>
-      {/* Display error message if error state is set */}
       {error && <div style={{ color: 'red' }}>{error}</div>}
     </form>
   );
 };
 
-export default AddBookForm; // Corrected the export statement
+export default AddBook’s Form;
 export { ADD_BOOK, addBook };
