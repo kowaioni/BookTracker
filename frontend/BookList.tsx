@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from './store';
 import { Book } from './types';
@@ -10,14 +10,31 @@ const BookList: React.FC = () => {
   const books = useSelector((state: RootState) => state.bookState.books);
   const [error, setError] = useState<string | null>(null);
 
-  React.useEffect(() => {
+  const processError = (err: any) => {
+    // Basic error processing
+    if (err instanceof Error) {
+      return err.message;
+    } else if (typeof err === 'string') {
+      return err;
+    } else {
+      return 'An unexpected error occurred. Please try again later.';
+    }
+  };
+
+  useEffect(() => {
     dispatch(fetchBooks())
-      .catch(err => setError("Failed to fetch books. Please try again later."));
+      .catch(err => {
+          const errorMessage = processError(err);
+          setError(`Failed to fetch books. ${errorMessage}`);
+      });
   }, [dispatch]);
 
   const handleDelete = (id: string) => {
     dispatch(deleteBook(id))
-      .catch(err => setError(`Failed to delete the book (ID: ${id}). Please try again.`));
+      .catch(err => {
+          const errorMessage = processError(err);
+          setError(`Failed to delete the book (ID: ${id}). ${errorMessage}`);
+      });
   };
 
   return (
@@ -36,4 +53,4 @@ const BookList: React.FC = () => {
   );
 }
 
-export default BookList;
+export default Book collabor
