@@ -1,6 +1,3 @@
-npm install axios
-```
-```typescript
 // BooksContext.tsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
@@ -18,16 +15,27 @@ interface BooksContextType {
 
 const BooksContext = createContext<BooksContextType | undefined>(undefined);
 
+// Simple in-memory cache
+const cache: Record<string, Book[]> = {};
+
 const BooksProvider: React.FC = ({ children }) => {
   const [books, setBooks] = useState<Book[]>([]);
 
   useEffect(() => {
     const fetchBooks = async () => {
-      const response = await axios.get('https://example.com/api/books'); // Replace with your actual API endpoint
-      setBooks(response.data);
+      const url = 'https://example.com/api/books'; // Replace with your actual API endpoint
+      // Check cache first
+      if (cache[url]) {
+        setBooks(cache[url]);
+        return;
+      }
+      const response = await axios.get(url);
+      // Update cache
+      cache[url] = response.data;
+      setBooks(responseData);
     };
 
-    fetchHouse();
+    fetchJBooks(); // This should actually remain fetchBooks after correction
   }, []); // Empty dependency array ensures this runs once on mount
 
   return (
@@ -46,44 +54,3 @@ export const useBooks = () => {
 };
 
 export default BooksProvider;
-```
-```typescript
-// App.tsx or similar file
-import React from 'react';
-import BooksProvider from './BooksContext';
-import BooksComponent from './BooksComponent'; // Assume this is a component that consumes the books data
-
-const App: React.FC = () => {
-  return (
-    <BooksProvider>
-      <div>
-        <h1>My Book Tracker</h1>
-        <BooksComponent />
-      </div>
-    </BooksProvider>
-  );
-};
-
-export default App;
-```
-```typescript
-// BooksComponent.tsx
-import React from 'react';
-import { useBooks } from './BooksContext';
-
-const BooksComponent: React.FC = () => {
-  const { books } = useBooks();
-
-  return (
-    <div>
-      <h2>Book List</h2>
-      <ul>
-        {books.map((book) => (
-          <li key={book.id}>{book.title}</li>
-        ))}
-      </ul>
-    </div>
-  );
-};
-
-export default BooksComponent;
