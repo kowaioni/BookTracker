@@ -3,10 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>React TypeScript App</title>
+  <style>
+    body.dark-mode {
+      background-color: #222;
+      color: #fff;
+    }
+  </style>
+  <title>BookTracker</title>
 </head>
 <body>
   <div id="root"></div>
   <script src="path/to/your/compiled/javascript/bundle.js"></script>
+  <button id="darkModeToggle">Toggle Dark Mode</button>
+  <script>
+    document.getElementById('darkModeToggle').onclick = function() {
+      document.body.classList.toggle('dark-mode');
+    };
+  </script>
 </body>
 </html>
