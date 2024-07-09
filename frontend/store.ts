@@ -1,9 +1,35 @@
-import { configureStore } from '@reduxjs/toolkit';
-import booksReducer from './features/books/booksSlice';
+import { configureStore, createSlice, PayloadAction, createAsyncThunks } from '@reduxjs/toolkit';
+
+interface Book {
+  id: number;
+  title: string;
+  author: string;
+}
+
+interface BooksState {
+  books: Book[];
+  error: string | null;
+}
+
+const initialState: BooksState = {
+  books: [],
+  error: null
+};
+
+const booksSlice = createSlice({
+  name: 'books',
+  initialState,
+  reducers: {
+  },
+  extraReducers: (builder) => {
+  }
+});
+
+const booksReducer = booksSlice.reducer;
 
 export const store = configureStore({
   reducer: {
-    books: books레
+    books: booksReducer,
   },
 });
 
