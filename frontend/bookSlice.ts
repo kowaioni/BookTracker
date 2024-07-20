@@ -1,19 +1,15 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-
 type Book = {
   id: string;
   title: string;
   author: string;
 };
-
 type BooksState = {
   books: Book[];
 };
-
 const initialState: BooksState = {
   books: [],
 };
-
 const booksSlice = createSlice({
   name: 'books',
   initialState,
@@ -32,7 +28,5 @@ const booksSlice = createSlice({
     },
   },
 });
-
-export const { addBook, updateWrite, removeBook } = booksSlice.actions;
-
+export const { addBook, updateBook, remove­Book } = booksSlice.actions
 export default booksSlice.reducer;
